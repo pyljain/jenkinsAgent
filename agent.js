@@ -8,16 +8,20 @@ const SQS = new AWS.SQS({
     region: 'us-east-2'
 })
 
+const request = require('request')
+
 const UI_UPDATE_QUEUE = 'https://sqs.us-east-2.amazonaws.com/287634355245/JenkinsUIUpdates'
 
 console.log('Argument passed is', instanceId)
 
-const updateDB = () => new Promise((resolve, reject) => {
+const updateDB = (hostname) => new Promise((resolve, reject) => {
+    const url = `http://${hostname}`
     const updateDBParams = {
         TableName: 'JemkinsInstances',
         Item: {
             id: instanceId,
-            status: 'Ready'
+            status: 'Ready',
+            hostname: url
         }
     }
 
@@ -46,7 +50,23 @@ const updateUIMsg = () => new Promise((resolve, reject) => {
     })
 })
 
+const getPublicHostName = () => new Promise((resolve, reject) => {
+    request('http://169.254.169.254/latest/meta-data/public-hostname', {}, (err, res, body) => {
+        if(err){
+            reject(err)
+        } else {
+            console.log('Hostname body is', body)
+            resolve(body)
+        }
+    })
+})
 
-updateDB()
+// updateDB()
+//     .then(() => getPublicHostName())
+//     .then(() => updateUIMsg())
+//     .catch((e) => console.log(e))
+
+getPublicHostName()
+    .then((hostname) => updateDB(hostname))
     .then(() => updateUIMsg())
     .catch((e) => console.log(e))
