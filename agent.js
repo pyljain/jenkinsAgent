@@ -15,7 +15,7 @@ const UI_UPDATE_QUEUE = 'https://sqs.us-east-2.amazonaws.com/287634355245/Jenkin
 console.log('Argument passed is', instanceId)
 
 const updateDB = (hostname) => new Promise((resolve, reject) => {
-    const url = `http://${hostname}`
+    const url = `http://${hostname}:8080`
     const updateDBParams = {
         TableName: 'JemkinsInstances',
         Item: {
